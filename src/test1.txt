@@ -1,0 +1,50 @@
+==6183== Lackey, an example Valgrind tool
+==6183== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote.
+==6183== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==6183== Command: ./sequential
+==6183== Parent PID: 1621
+==6183== 
+I  0401f540,3
+I  0401f543,5
+ S 1ffefff828,8
+I  040201d0,4
+I  040201d4,1
+ S 1ffefff820,8
+I  040201d5,7
+I  040201dc,7
+I  040201e3,5
+I  040201e8,5
+I  040201ed,4
+I  040201f1,3
+I  040201f4,2
+ S 1ffefff818,8
+I  040201f6,2
+ S 1ffefff810,8
+I  040201f8,2
+ S 1ffefff808,8
+I  040201fa,2
+ S 1ffefff800,8
+I  040201fc,1
+ S 1ffefff7f8,8
+I  040201fd,7
+I  04020204,7
+ S 1ffefff798,8
+I  0402020b,4
+ S 1ffefff7a0,16
+I  0402020f,2
+I  04020211,7
+ M 04038e06,1
+I  04020218,7
+I  0402021f,6
+I  04020225,6
+I  0402022b,4
+I  0402022f,7
+ S 04038ab0,8
+I  04020236,3
+I  04020239,3
+I  0402023c,7
+I  04020243,7
+ S 04037a60,8
+I  0402024a,7
+ L 04037e58,8
+I  04020251,7
