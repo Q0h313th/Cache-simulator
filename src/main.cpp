@@ -21,7 +21,7 @@ struct MemoryAccess {
 
 /* Define the Cache structure class */
 class Cache {
-    private:
+    protected:
         uint32_t cache_size_kb;
         uint32_t cache_line_size_bytes;
         uint32_t num_sets;
@@ -39,7 +39,7 @@ class Cache {
         uint32_t global_lru_counter = 0;
 
     public:
-        Cache(uint32_t cache_size_kb, uint32_t cache_line_size_bytes, uint32_t associativity) {
+        Cache(uint32_t cache_size_kb, uint32_t associativity, uint32_t cache_line_size_bytes = 64) {
             /* Calculate the number of sets? */
             this->cache_size_kb = cache_size_kb;
             this->cache_line_size_bytes = cache_line_size_bytes;
@@ -118,6 +118,7 @@ class Cache {
                     cache[index][j].valid = true;
                     cache[index][j].lru_counter = global_lru_counter;
                     global_lru_counter++;
+                    return false;
                 }
             }
             /* no empty found, so evict LRU way */
@@ -145,6 +146,62 @@ class Cache {
             std::cout << "Miss rate: " << miss_rate << "%" << std::endl;
         }
 };
+
+class CacheL1: public Cache {
+    public:
+        CacheL1(uint32_t cache_size_kb, uint32_t associativity): Cache(cache_size_kb, associativity) {}
+};
+
+class CacheL2: public Cache {
+    public:
+        CacheL2(uint32_t four_times_cache_size_kb, uint32_t associativity): Cache(four_times_cache_size_kb, associativity) {}
+};
+
+class CacheL3: public Cache{
+    public:
+        CacheL3(uint32_t sixteen_times_cache_size_kb, uint32_t associativity): Cache(sixteen_times_cache_size_kb, associativity) {}
+};
+
+class MemoryHierarchy {
+    protected:
+        uint32_t l1_size_kb;
+        uint32_t l1_assoc;
+        uint32_t l2_assoc;
+        uint32_t l3_assoc;
+        CacheL1 l1;
+        CacheL2 l2;
+        CacheL3 l3;
+
+    public: 
+        MemoryHierarchy(uint32_t l1_size, uint32_t l1_associativity, uint32_t l2_associativity, uint32_t l3_associativity): 
+            l1(l1_size, l1_associativity), 
+            l2(4 * l1_size, l2_associativity), 
+            l3(16 * l1_size, l3_associativity) {}
+
+        bool access(uint64_t address) {
+            if (!l1.access(address)) {
+                if(!l2.access(address)) {
+                    if(!l3.access(address)) {
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+            return true;
+        }
+
+        void print_stats() {
+            std::cout << "=== L1 ===" << std::endl;
+            l1.print_stats();
+            std::cout << "=== L2 ===" << std::endl;
+            l2.print_stats();
+            std::cout << "=== L3 ===" << std::endl;
+            l3.print_stats();
+        }
+};
+
+
 
 /* Parse the trace line and store the values into a struct */
 MemoryAccess parseTraceLine(std::string Line) {
@@ -175,7 +232,7 @@ int main(){
         return 1;
     }
     
-    Cache cache(64, 64, 12);
+    MemoryHierarchy mem(1, 4, 8, 16);
     
     std::string line;
     int access_count = 0;
@@ -183,7 +240,7 @@ int main(){
         MemoryAccess access = parseTraceLine(line);
         
         if (access.event != '\0') {
-            bool hit = cache.access(access.address);
+            bool hit = mem.access(access.address);
             
             // Print each access
             access_count++;
@@ -195,6 +252,6 @@ int main(){
     }
 
     file.close();
-    cache.print_stats();
+    mem.print_stats();
     return 0;
 }

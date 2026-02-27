@@ -25,7 +25,7 @@ LEVEL3_CACHE_ASSOC                 8
 - Capacity: 288 KiB = 294,912 bytes (49 KB per core)
 - Line size: 64 bytes
 - Associativity: 12-way
-- Number of sets: 294,912 / (64 × 12) = **384 sets**
+- Number of sets: 294,912 / (64 × 12) = **384 sets** (64 sets per core)
 
 **L2 Cache**
 - Capacity: 1280 KiB = 1,310,720 bytes
@@ -47,6 +47,10 @@ LEVEL3_CACHE_ASSOC                 8
 | L1i | 192 KiB | - | 64B | - |
 | L2 | 1280 KiB | 20-way | 64B | 1024 |
 | L3 | 12 MiB | 8-way | 64B | 24,576 |
+
+### CPU topology
+`lstopo`
+![Topo Diagram](../../images/cpu_topology.png)
 
 ## Address Decoding
 
