@@ -2,13 +2,11 @@
 #define MAINMEMORY_H
 
 #include <iostream>
-#include <string>
 #include <cstdint>
-#include <sstream>
-#include <cmath>
-#include <iomanip>
 #include <unordered_map>
 #include <cassert>
+#include <array>
+#include <cstring>
 
 class MainMemory {
     private:
@@ -23,6 +21,16 @@ class MainMemory {
 
         void write_float(uint64_t address, float value) {
             memory[address] = value; // so we can overwrite memory freely
+        }
+
+        std::array<uint8_t, 64> read_line(uint64_t address) {
+            std::array<uint8_t, 64> block;
+            uint64_t block_addr = address & (~63ULL);
+            for (int i = 0; i < 16; i++) {
+                float value = read_float(block_addr + (i*4));
+                memcpy(&block[i*4], &value, 4);
+            }
+            return block;
         }
 
 };

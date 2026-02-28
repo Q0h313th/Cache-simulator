@@ -10,6 +10,8 @@
 #include <cmath>
 #include <iomanip>
 #include "cache.h"
+#include "MainMemory.h"
+#include <array>
 
 class MemoryHierarchy {
     protected:
@@ -20,6 +22,7 @@ class MemoryHierarchy {
         CacheL1 l1;
         CacheL2 l2;
         CacheL3 l3;
+        MainMemory memory;
 
     public: 
         MemoryHierarchy(uint32_t l1_size, uint32_t l1_associativity, uint32_t l2_associativity, uint32_t l3_associativity): 
@@ -27,17 +30,32 @@ class MemoryHierarchy {
             l2(4 * l1_size, l2_associativity), 
             l3(16 * l1_size, l3_associativity) {}
 
-        bool access(uint64_t address) {
-            if (!l1.access(address)) {
-                if(!l2.access(address)) {
-                    if(!l3.access(address)) {
-                        return false;
-                    }
-                    return true;
-                }
-                return true;
+        float read_mem(uint64_t address) {
+            cacheReadResult result = l1.read(address);
+            if (result.hit) {
+                return result.value;
             }
-            return true;
+            result = l2.read(address);
+            if(result.hit) {
+                // install cache line into L1
+                l1.cacheInstall(address, result.linedata);
+                return result.value;
+            }
+            result = l3.read(address);
+            if (result.hit) {
+                l1.cacheInstall(address, result.linedata);
+                l2.cacheInstall(address, result.linedata);
+                return result.value;
+            }
+            std::array<uint8_t, 64> block;
+            block = memory.read_line(address);
+            l1.cacheInstall(address, block);
+            l2.cacheInstall(address, block);
+            l3.cacheInstall(address, block);
+            float value;
+            uint32_t offset = address & 63ULL;
+            memcpy(&value, &block[offset], 4);
+            return value;
         }
 
         void print_stats() {

@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iomanip>
 #include <cstring>
+#include <array>
 
 struct CacheLine {
     uint64_t tag;
@@ -22,6 +23,7 @@ struct CacheLine {
 struct cacheReadResult {
     bool hit;
     float value;
+    std::array<uint8_t, 64> linedata;
 };
 
 class Cache {
@@ -102,6 +104,7 @@ class Cache {
             uint64_t tag = extract_tag(address);
             uint32_t offset = extract_offset(address);
             float value;
+            std::array<uint8_t, 64> linedata;
             cacheReadResult result;
 
             /* search for matching tag in cache[set][j] */
@@ -112,7 +115,9 @@ class Cache {
                     global_lru_counter++;
                     result.hit = true;
                     memcpy(&value, &cache[index][j].data[offset], sizeof(float));
+                    memcpy(linedata.data(), &cache[index][j].data, 64);
                     result.value = value;
+                    result.linedata = linedata;
                     return result;
                 }
             }
@@ -123,7 +128,7 @@ class Cache {
         }
 
         /* cache.install() */
-        void cacheInstall(uint64_t address, uint8_t data[64]) {
+        void cacheInstall(uint64_t address, std::array<uint8_t, 64> data) {
 
             uint32_t index = extract_index(address);
             uint64_t tag = extract_tag(address);
@@ -133,7 +138,7 @@ class Cache {
                     cache[index][j].tag = tag;
                     cache[index][j].lru_counter = global_lru_counter;
                     global_lru_counter++;
-                    memcpy(cache[index][j].data, data, 64); 
+                    memcpy(cache[index][j].data, data.data(), 64); 
                     return;
                 }
             }
@@ -143,7 +148,7 @@ class Cache {
             cache[index][victim_way].tag = tag;
             cache[index][victim_way].lru_counter = global_lru_counter;
             global_lru_counter++;
-            memcpy(cache[index][victim_way].data, data, 64);
+            memcpy(cache[index][victim_way].data, data.data(), 64);
         }
 
         void print_stats(){
