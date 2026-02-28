@@ -56,7 +56,6 @@ class Cache {
 
             /* 
             set associative caches are 2D matrices of the sort cache[num_sets][associativity]
-            below starts searching, hitting, missing and inserting
             */
             cache.resize(num_sets);
             for (int i = 0; i < num_sets; i++) {
@@ -125,6 +124,18 @@ class Cache {
             misses++;
             result.hit = false;
             return result;
+        }
+
+        void write(uint64_t address, float value) {
+            uint32_t index = extract_index(address);
+            uint64_t tag = extract_tag(address);
+            uint32_t offset = extract_offset(address);
+
+            for (int j = 0; j < associativity; j++) {
+                if (cache[index][j].valid && cache[index][j].tag == tag) {
+                    memcpy(&cache[index][j].data[offset], &value, 4);
+                }
+            }
         }
 
         /* cache.install() */

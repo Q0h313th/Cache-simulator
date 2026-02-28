@@ -58,6 +58,14 @@ class MemoryHierarchy {
             return value;
         }
 
+        void write_mem(uint64_t address, float value) {
+            memory.write_float(address, value);
+
+            l1.write(address, value);
+            l2.write(address, value);
+            l3.write(address, value);
+         }
+
         void print_stats() {
             std::cout << "=== L1 ===" << std::endl;
             l1.print_stats();
